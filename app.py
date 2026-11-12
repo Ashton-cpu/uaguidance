@@ -325,17 +325,72 @@ def free_slots(db, counselor, day, dur):
     return out
 
 
-def send_mail(to, subject, body):
+def _html_email(title, preheader, body_html):
+    """Wrap content in a branded UA Guidance Office HTML email shell."""
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{title}</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f6fb;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6fb;padding:32px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+
+      <!-- HEADER -->
+      <tr>
+        <td style="background:#1a2456;padding:28px 36px;text-align:center;">
+          <p style="margin:0 0 4px 0;font-size:11px;color:#c9a227;letter-spacing:2px;text-transform:uppercase;">University of the Assumption</p>
+          <p style="margin:0;font-size:22px;font-weight:bold;color:#ffffff;">Guidance Office</p>
+          <div style="margin:14px auto 0;width:48px;height:3px;background:#c9a227;border-radius:2px;"></div>
+        </td>
+      </tr>
+
+      <!-- BODY -->
+      <tr>
+        <td style="padding:36px 36px 28px;">
+          {body_html}
+        </td>
+      </tr>
+
+      <!-- FOOTER -->
+      <tr>
+        <td style="background:#f4f6fb;padding:20px 36px;text-align:center;border-top:1px solid #e8eaf0;">
+          <p style="margin:0;font-size:12px;color:#8a8fa8;">This is an automated message from the UA Guidance Office.<br>Please do not reply to this email.</p>
+          <p style="margin:8px 0 0;font-size:11px;color:#b0b4c8;">University of the Assumption &bull; Angeles City, Pampanga</p>
+        </td>
+      </tr>
+
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>"""
+
+
+def send_mail(to, subject, text_body, html_body=None):
     """Send through the school's SMTP server. Without SMTP settings the email
     is printed in the terminal (development mode)."""
     host = os.environ.get("SMTP_HOST")
     if not host:
-        print(f"\n[DEV EMAIL] To: {to}\nSubject: {subject}\n{body}\n")
+        print(f"\n[DEV EMAIL] To: {to}\nSubject: {subject}\n{text_body}\n")
         return True
-    msg = EmailMessage()
-    msg["From"] = os.environ.get("SMTP_FROM", os.environ.get("SMTP_USER", ""))
-    msg["To"], msg["Subject"] = to, subject
-    msg.set_content(body)
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    if html_body:
+        msg = MIMEMultipart("alternative")
+        msg["From"] = os.environ.get("SMTP_FROM", os.environ.get("SMTP_USER", ""))
+        msg["To"] = to
+        msg["Subject"] = subject
+        msg.attach(MIMEText(text_body, "plain"))
+        msg.attach(MIMEText(html_body, "html"))
+    else:
+        msg = EmailMessage()
+        msg["From"] = os.environ.get("SMTP_FROM", os.environ.get("SMTP_USER", ""))
+        msg["To"], msg["Subject"] = to, subject
+        msg.set_content(text_body)
     try:
         with smtplib.SMTP(host, int(os.environ.get("SMTP_PORT", "587")), timeout=15) as s:
             s.starttls()
@@ -456,9 +511,26 @@ def api_send_code():
     session["vc"] = {"email": email, "h": code_hash(email, code),
                  "exp": t + 300, "tries": 0}
     session.pop("vok", None)
-    sent = send_mail(email, "UA Guidance Office verification code",
-                     f"Your verification code is {code}. It expires in 5 minutes.\n"
-                     "If you did not request it, ignore this email.")
+    html_code = _html_email(
+        "UA Guidance Office — Verification Code",
+        f"Your verification code is {code}",
+        f"""
+        <p style="margin:0 0 8px;font-size:16px;font-weight:bold;color:#1a2456;">Email Verification</p>
+        <p style="margin:0 0 24px;font-size:14px;color:#444;">Use the code below to verify your email address and continue booking your appointment.</p>
+        <div style="background:#f4f6fb;border:2px dashed #c9a227;border-radius:8px;padding:24px;text-align:center;margin:0 0 24px;">
+          <p style="margin:0 0 6px;font-size:12px;color:#8a8fa8;letter-spacing:1px;text-transform:uppercase;">Your verification code</p>
+          <p style="margin:0;font-size:40px;font-weight:bold;letter-spacing:10px;color:#1a2456;">{code}</p>
+          <p style="margin:8px 0 0;font-size:12px;color:#c9a227;">Expires in 5 minutes</p>
+        </div>
+        <p style="margin:0;font-size:13px;color:#8a8fa8;">If you did not request this code, you can safely ignore this email.</p>
+        """
+    )
+    sent = send_mail(
+        email,
+        "UA Guidance Office verification code",
+        f"Your verification code is {code}. It expires in 5 minutes.\nIf you did not request it, ignore this email.",
+        html_code
+    )
     if not sent:
         return jsonify(error="Could not send the email. Please try again later."), 502
     return jsonify(ok=True)
@@ -544,10 +616,48 @@ def api_book():
         raise
     audit("student", "book", ref)
     session["refs"] = (session.get("refs", []) + [ref])[-10:]
-    send_mail(email, f"Appointment received ({ref})",
-              f"Hi {name},\n\nYour {svc} with {COUNSELORS[counselor][0]} on {pretty(day)} "
-              f"at {fmt_time(start)} was received. Reference code: {ref}.\n"
-              "It is valid once your counselor confirms it.")
+    html_received = _html_email(
+        f"Appointment Received — {ref}",
+        f"Your appointment request has been received.",
+        f"""
+        <p style="margin:0 0 4px;font-size:16px;font-weight:bold;color:#1a2456;">Hi {name},</p>
+        <p style="margin:0 0 24px;font-size:14px;color:#444;">Your appointment request has been received and is pending confirmation from your counselor.</p>
+        <div style="background:#f4f6fb;border-radius:8px;padding:20px 24px;margin:0 0 24px;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#8a8fa8;width:140px;">Reference Code</td>
+              <td style="padding:6px 0;font-size:13px;font-weight:bold;color:#1a2456;">{ref}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#8a8fa8;">Service</td>
+              <td style="padding:6px 0;font-size:13px;color:#333;">{svc}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#8a8fa8;">Counselor</td>
+              <td style="padding:6px 0;font-size:13px;color:#333;">{COUNSELORS[counselor][0]}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#8a8fa8;">Date</td>
+              <td style="padding:6px 0;font-size:13px;color:#333;">{pretty(day)}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:13px;color:#8a8fa8;">Time</td>
+              <td style="padding:6px 0;font-size:13px;color:#333;">{fmt_time(start)}</td>
+            </tr>
+          </table>
+        </div>
+        <div style="background:#fff8e1;border-left:4px solid #c9a227;border-radius:4px;padding:12px 16px;margin:0 0 20px;">
+          <p style="margin:0;font-size:13px;color:#7a6000;">&#9888; Your appointment is <strong>pending</strong>. It will be confirmed once your counselor reviews it.</p>
+        </div>
+        <p style="margin:0;font-size:13px;color:#8a8fa8;">Keep your reference code safe — you can use it to check your appointment status.</p>
+        """
+    )
+    send_mail(
+        email,
+        f"Appointment received ({ref})",
+        f"Hi {name},\n\nYour {svc} with {COUNSELORS[counselor][0]} on {pretty(day)} at {fmt_time(start)} was received. Reference code: {ref}.\nIt is valid once your counselor confirms it.",
+        html_received
+    )
     return jsonify(ok=True, ref=ref)
 
 
@@ -644,9 +754,49 @@ def change_status(ref, action):
     audit(user, action, ref)
     try:
         rec = decrypt(row["enc"], ref)
-        send_mail(rec["email"], f"Appointment {status.lower()} ({ref})",
-                  f"Hi {rec['name']},\n\nYour {row['service']} on {pretty(row['day'])} at "
-                  f"{fmt_time(row['start'])} is now {status.upper()}.\nReference code: {ref}.")
+        is_confirmed = status == "Confirmed"
+        status_color = "#1a7a4a" if is_confirmed else "#b91c1c"
+        status_bg = "#e8f5ee" if is_confirmed else "#fde8e8"
+        status_icon = "&#10003;" if is_confirmed else "&#10007;"
+        html_status = _html_email(
+            f"Appointment {status} — {ref}",
+            f"Your appointment is now {status.upper()}.",
+            f"""
+            <p style="margin:0 0 4px;font-size:16px;font-weight:bold;color:#1a2456;">Hi {rec['name']},</p>
+            <p style="margin:0 0 24px;font-size:14px;color:#444;">Your appointment status has been updated.</p>
+            <div style="background:{status_bg};border-radius:8px;padding:16px 20px;text-align:center;margin:0 0 24px;">
+              <p style="margin:0 0 4px;font-size:28px;color:{status_color};">{status_icon}</p>
+              <p style="margin:0;font-size:18px;font-weight:bold;color:{status_color};">Appointment {status.upper()}</p>
+            </div>
+            <div style="background:#f4f6fb;border-radius:8px;padding:20px 24px;margin:0 0 20px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:6px 0;font-size:13px;color:#8a8fa8;width:140px;">Reference Code</td>
+                  <td style="padding:6px 0;font-size:13px;font-weight:bold;color:#1a2456;">{ref}</td>
+                </tr>
+                <tr>
+                  <td style="padding:6px 0;font-size:13px;color:#8a8fa8;">Service</td>
+                  <td style="padding:6px 0;font-size:13px;color:#333;">{row['service']}</td>
+                </tr>
+                <tr>
+                  <td style="padding:6px 0;font-size:13px;color:#8a8fa8;">Date</td>
+                  <td style="padding:6px 0;font-size:13px;color:#333;">{pretty(row['day'])}</td>
+                </tr>
+                <tr>
+                  <td style="padding:6px 0;font-size:13px;color:#8a8fa8;">Time</td>
+                  <td style="padding:6px 0;font-size:13px;color:#333;">{fmt_time(row['start'])}</td>
+                </tr>
+              </table>
+            </div>
+            <p style="margin:0;font-size:13px;color:#8a8fa8;">If you have questions, please contact the Guidance Office directly.</p>
+            """
+        )
+        send_mail(
+            rec["email"],
+            f"Appointment {status.lower()} ({ref})",
+            f"Hi {rec['name']},\n\nYour {row['service']} on {pretty(row['day'])} at {fmt_time(row['start'])} is now {status.upper()}.\nReference code: {ref}.",
+            html_status
+        )
     except Exception:
         pass
     return redirect(url_for("dashboard"))
