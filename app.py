@@ -621,7 +621,12 @@ def dashboard():
         except Exception:  # InvalidTag: stored data was altered
             items.append({"a": r, "r": {}, "bad": True})
     audit(user, "view_dashboard")
-    return render_template("dashboard.html", items=items)
+    from itertools import groupby
+    pending   = [x for x in items if x["a"]["status"] == "Pending"]
+    confirmed = [x for x in items if x["a"]["status"] == "Confirmed"]
+    cancelled = [x for x in items if x["a"]["status"] == "Cancelled"]
+    return render_template("dashboard.html", items=items,
+                           pending=pending, confirmed=confirmed, cancelled=cancelled)
 
 
 @app.post("/staff/appointments/<ref>/<action>")

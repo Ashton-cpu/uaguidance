@@ -124,9 +124,9 @@
 {% endblock %}
 
 {% block body %}
-{% set pending_items   = [] %}
-{% set confirmed_items = [] %}
-{% set cancelled_items = [] %}
+{% set pending_items   = pending %}
+{% set confirmed_items = confirmed %}
+{% set cancelled_items = cancelled %}
 {% for i in items %}
   {% if i.a.status == 'Pending'   %}{% set pending_items   = pending_items   + [i] %}{% endif %}
 {% endfor %}
