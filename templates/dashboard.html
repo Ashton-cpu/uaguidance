@@ -16,7 +16,6 @@
   .dash-header h1 { margin: 0; }
   .dash-meta { font-size: 13px; color: var(--mute); }
 
-  /* Summary chips */
   .summary-row {
     display: flex;
     gap: 10px;
@@ -40,7 +39,6 @@
   .sum-chip.confirmed .num { color: var(--ok); }
   .sum-chip.cancelled .num { color: #999; }
 
-  /* Section headers */
   .section-label {
     font: 700 13px "Segoe UI", sans-serif;
     text-transform: uppercase;
@@ -63,10 +61,8 @@
     padding: 1px 7px;
     opacity: .85;
   }
-
   .section-block { margin-bottom: 24px; }
 
-  /* Appointment card */
   .appt-card {
     background: var(--card);
     border: 1px solid var(--line);
@@ -79,32 +75,16 @@
     gap: 14px;
     box-shadow: 0 1px 3px rgba(20,41,95,.05);
   }
-  .appt-card.pending  { border-left: 4px solid var(--warn); }
-  .appt-card.confirmed { border-left: 4px solid var(--ok); }
-  .appt-card.cancelled { border-left: 4px solid #ccc; opacity: .75; }
+  .appt-card.Pending   { border-left: 4px solid var(--warn); }
+  .appt-card.Confirmed { border-left: 4px solid var(--ok); }
+  .appt-card.Cancelled { border-left: 4px solid #ccc; opacity: .75; }
 
-  .appt-name {
-    font: 700 15px "Segoe UI", sans-serif;
-    color: var(--navy);
-  }
-  .appt-sub {
-    font-size: 13px;
-    color: var(--mute);
-    margin: 1px 0 6px;
-  }
-  .appt-detail {
-    font-size: 14px;
-    color: var(--ink);
-    margin: 4px 0;
-  }
-  .appt-detail .icon { margin-right: 4px; }
+  .appt-name { font: 700 15px "Segoe UI", sans-serif; color: var(--navy); }
+  .appt-sub  { font-size: 13px; color: var(--mute); margin: 1px 0 6px; }
+  .appt-detail { font-size: 14px; color: var(--ink); margin: 4px 0; }
   .appt-contact {
-    font-size: 13px;
-    color: var(--mute);
-    margin-top: 6px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 14px;
+    font-size: 13px; color: var(--mute); margin-top: 6px;
+    display: flex; flex-wrap: wrap; gap: 4px 14px;
   }
   .ref-badge {
     display: inline-block;
@@ -117,42 +97,24 @@
     margin-top: 6px;
   }
   .note-box {
-    margin-top: 7px;
-    font-size: 13px;
-    background: #fffbec;
-    border-left: 3px solid var(--gold);
-    border-radius: 4px;
-    padding: 5px 10px;
-    color: var(--ink);
+    margin-top: 7px; font-size: 13px;
+    background: #fffbec; border-left: 3px solid var(--gold);
+    border-radius: 4px; padding: 5px 10px; color: var(--ink);
   }
-
   .appt-actions {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 6px;
-    flex-shrink: 0;
+    display: flex; flex-direction: column;
+    align-items: flex-end; gap: 6px; flex-shrink: 0;
   }
   .status-badge {
-    font-size: 12px;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 20px;
-    text-transform: uppercase;
-    letter-spacing: .05em;
+    font-size: 12px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: .05em;
   }
   .status-badge.Pending   { background: #fff3e0; color: var(--warn); }
   .status-badge.Confirmed { background: #e6f4ec; color: var(--ok); }
   .status-badge.Cancelled { background: #f2f2f2; color: #888; }
-
   .action-btns { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
-
-  .empty-msg {
-    color: var(--mute);
-    font-size: 14px;
-    padding: 12px 0 4px;
-    font-style: italic;
-  }
+  .empty-msg { color: var(--mute); font-size: 14px; padding: 12px 0 4px; font-style: italic; }
 
   @media(max-width:580px) {
     .appt-card { flex-direction: column; }
@@ -163,16 +125,15 @@
 
 {% block body %}
 
-{% set pending_items    = items | selectattr('a.status', 'equalto', 'Pending')   | list %}
-{% set confirmed_items  = items | selectattr('a.status', 'equalto', 'Confirmed') | list %}
-{% set cancelled_items  = items | selectattr('a.status', 'equalto', 'Cancelled') | list %}
+{% set pending_items   = items | selectattr('a.status', 'equalto', 'Pending')   | list %}
+{% set confirmed_items = items | selectattr('a.status', 'equalto', 'Confirmed') | list %}
+{% set cancelled_items = items | selectattr('a.status', 'equalto', 'Cancelled') | list %}
 
 <div class="dash-header">
   <h1>Dashboard</h1>
   <span class="dash-meta">{{ staff_name }} &nbsp;·&nbsp; Session expires after 15 min idle</span>
 </div>
 
-<!-- Summary chips -->
 <div class="summary-row">
   <div class="sum-chip pending">
     <span class="num">{{ pending_items | length }}</span>
@@ -192,90 +153,106 @@
   </div>
 </div>
 
-<!-- PENDING -->
+{# ── PENDING ── #}
 <div class="section-block">
-  <div class="section-label pending">
-    Pending
-    <span class="count">{{ pending_items | length }}</span>
-  </div>
+  <div class="section-label pending">⏳ Pending <span class="count">{{ pending_items | length }}</span></div>
   {% for i in pending_items %}
-    {{ render_appt(i) }}
-  {% else %}
-    <p class="empty-msg">No pending appointments.</p>
-  {% endfor %}
-</div>
-
-<!-- CONFIRMED -->
-<div class="section-block">
-  <div class="section-label confirmed">
-    Confirmed
-    <span class="count">{{ confirmed_items | length }}</span>
-  </div>
-  {% for i in confirmed_items %}
-    {{ render_appt(i) }}
-  {% else %}
-    <p class="empty-msg">No confirmed appointments.</p>
-  {% endfor %}
-</div>
-
-<!-- CANCELLED -->
-<div class="section-block">
-  <div class="section-label cancelled">
-     Cancelled
-    <span class="count">{{ cancelled_items | length }}</span>
-  </div>
-  {% for i in cancelled_items %}
-    {{ render_appt(i) }}
-  {% else %}
-    <p class="empty-msg">No cancelled appointments.</p>
-  {% endfor %}
-</div>
-
-{% macro render_appt(i) %}
-<div class="appt-card {{ i.a.status }}">
-  <div style="flex:1; min-width:0;">
-    {% if i.bad %}
-      <span class="appt-name">{{ i.a.ref }}</span>
-      <p class="appt-sub" style="color:var(--warn);">⚠ Integrity check failed — record may have been tampered.</p>
-    {% else %}
-      <div class="appt-name">{{ i.r.name }}</div>
-      <div class="appt-sub">{{ i.r.student_no }} &nbsp;·&nbsp; {{ i.r.program }} &nbsp;·&nbsp; {{ i.r.section }}</div>
-      <div class="appt-detail">
-        <span class="icon"></span>{{ i.a.day | pretty }} &nbsp;·&nbsp;
-        <span class="icon"></span>{{ i.a.start | fmt_time }} &nbsp;·&nbsp;
-        {{ i.a.service }} ({{ i.a.dur }} mins)
+  <div class="appt-card {{ i.a.status }}">
+    <div style="flex:1;min-width:0;">
+      {% if i.bad %}
+        <span class="appt-name">{{ i.a.ref }}</span>
+        <p class="appt-sub" style="color:var(--warn);">⚠ Integrity check failed.</p>
+      {% else %}
+        <div class="appt-name">{{ i.r.name }}</div>
+        <div class="appt-sub">{{ i.r.student_no }} &nbsp;·&nbsp; {{ i.r.program }} &nbsp;·&nbsp; {{ i.r.section }}</div>
+        <div class="appt-detail"> {{ i.a.day | pretty }} &nbsp;·&nbsp;  {{ i.a.start | fmt_time }} &nbsp;·&nbsp; {{ i.a.service }} ({{ i.a.dur }} mins)</div>
+        <div class="appt-contact"><span>✉ {{ i.r.email }}</span><span> {{ i.r.phone }}</span></div>
+        {% if i.r.note %}<div class="note-box"> {{ i.r.note }}</div>{% endif %}
+        <span class="ref-badge">{{ i.a.ref }}</span>
+      {% endif %}
+    </div>
+    <div class="appt-actions">
+      <span class="status-badge {{ i.a.status }}">{{ i.a.status }}</span>
+      <div class="action-btns">
+        <form class="inline" method="post" action="{{ url_for('change_status', ref=i.a.ref, action='confirm') }}">
+          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+          <button class="btn o s" style="color:var(--ok);border-color:var(--ok);">Confirm</button>
+        </form>
+        <form class="inline" method="post" action="{{ url_for('change_status', ref=i.a.ref, action='cancel') }}">
+          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+          <button class="btn o s">Cancel</button>
+        </form>
+        <a class="btn o s" href="{{ url_for('confirm_delete', ref=i.a.ref) }}" style="color:#b42318;border-color:#b42318;text-decoration:none;">Delete</a>
       </div>
-      <div class="appt-contact">
-        <span>{{ i.r.email }}</span>
-        <span>{{ i.r.phone }}</span>
-      </div>
-      {% if i.r.note %}
-      <div class="note-box">📝 {{ i.r.note }}</div>
-      {% endif %}
-      <span class="ref-badge">{{ i.a.ref }}</span>
-    {% endif %}
-  </div>
-
-  <div class="appt-actions">
-    <span class="status-badge {{ i.a.status }}">{{ i.a.status }}</span>
-    <div class="action-btns">
-      {% if i.a.status == 'Pending' %}
-      <form class="inline" method="post" action="{{ url_for('change_status', ref=i.a.ref, action='confirm') }}">
-        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-        <button class="btn o s" style="color:var(--ok); border-color:var(--ok);">Confirm</button>
-      </form>
-      {% endif %}
-      {% if i.a.status != 'Cancelled' %}
-      <form class="inline" method="post" action="{{ url_for('change_status', ref=i.a.ref, action='cancel') }}">
-        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
-        <button class="btn o s">Cancel</button>
-      </form>
-      {% endif %}
-      <a class="btn o s" href="{{ url_for('confirm_delete', ref=i.a.ref) }}"
-         style="color:#b42318; border-color:#b42318; text-decoration:none;">Delete</a>
     </div>
   </div>
+  {% else %}
+  <p class="empty-msg">No pending appointments.</p>
+  {% endfor %}
 </div>
-{% endmacro %}
+
+{# ── CONFIRMED ── #}
+<div class="section-block">
+  <div class="section-label confirmed"> Confirmed <span class="count">{{ confirmed_items | length }}</span></div>
+  {% for i in confirmed_items %}
+  <div class="appt-card {{ i.a.status }}">
+    <div style="flex:1;min-width:0;">
+      {% if i.bad %}
+        <span class="appt-name">{{ i.a.ref }}</span>
+        <p class="appt-sub" style="color:var(--warn);">⚠ Integrity check failed.</p>
+      {% else %}
+        <div class="appt-name">{{ i.r.name }}</div>
+        <div class="appt-sub">{{ i.r.student_no }} &nbsp;·&nbsp; {{ i.r.program }} &nbsp;·&nbsp; {{ i.r.section }}</div>
+        <div class="appt-detail"> {{ i.a.day | pretty }} &nbsp;·&nbsp; {{ i.a.start | fmt_time }} &nbsp;·&nbsp; {{ i.a.service }} ({{ i.a.dur }} mins)</div>
+        <div class="appt-contact"><span>✉ {{ i.r.email }}</span><span> {{ i.r.phone }}</span></div>
+        {% if i.r.note %}<div class="note-box">{{ i.r.note }}</div>{% endif %}
+        <span class="ref-badge">{{ i.a.ref }}</span>
+      {% endif %}
+    </div>
+    <div class="appt-actions">
+      <span class="status-badge {{ i.a.status }}">{{ i.a.status }}</span>
+      <div class="action-btns">
+        <form class="inline" method="post" action="{{ url_for('change_status', ref=i.a.ref, action='cancel') }}">
+          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+          <button class="btn o s">Cancel</button>
+        </form>
+        <a class="btn o s" href="{{ url_for('confirm_delete', ref=i.a.ref) }}" style="color:#b42318;border-color:#b42318;text-decoration:none;">Delete</a>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <p class="empty-msg">No confirmed appointments.</p>
+  {% endfor %}
+</div>
+
+{# ── CANCELLED ── #}
+<div class="section-block">
+  <div class="section-label cancelled">✖ Cancelled <span class="count">{{ cancelled_items | length }}</span></div>
+  {% for i in cancelled_items %}
+  <div class="appt-card {{ i.a.status }}">
+    <div style="flex:1;min-width:0;">
+      {% if i.bad %}
+        <span class="appt-name">{{ i.a.ref }}</span>
+        <p class="appt-sub" style="color:var(--warn);">⚠ Integrity check failed.</p>
+      {% else %}
+        <div class="appt-name">{{ i.r.name }}</div>
+        <div class="appt-sub">{{ i.r.student_no }} &nbsp;·&nbsp; {{ i.r.program }} &nbsp;·&nbsp; {{ i.r.section }}</div>
+        <div class="appt-detail"> {{ i.a.day | pretty }} &nbsp;·&nbsp;  {{ i.a.start | fmt_time }} &nbsp;·&nbsp; {{ i.a.service }} ({{ i.a.dur }} mins)</div>
+        <div class="appt-contact"><span>✉ {{ i.r.email }}</span><span> {{ i.r.phone }}</span></div>
+        {% if i.r.note %}<div class="note-box"> {{ i.r.note }}</div>{% endif %}
+        <span class="ref-badge">{{ i.a.ref }}</span>
+      {% endif %}
+    </div>
+    <div class="appt-actions">
+      <span class="status-badge {{ i.a.status }}">{{ i.a.status }}</span>
+      <div class="action-btns">
+        <a class="btn o s" href="{{ url_for('confirm_delete', ref=i.a.ref) }}" style="color:#b42318;border-color:#b42318;text-decoration:none;">Delete</a>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <p class="empty-msg">No cancelled appointments.</p>
+  {% endfor %}
+</div>
 
 {% endblock %}
