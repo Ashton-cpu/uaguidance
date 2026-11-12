@@ -142,7 +142,7 @@ class PgDB:
     def __init__(self):
         import psycopg
         from psycopg.rows import dict_row
-        self.conn = psycopg.connect(DATABASE_URL, autocommit=True, row_factory=dict_row)
+        self.conn = psycopg.connect(DATABASE_URL, autocommit=True, row_factory=dict_row, prepare_threshold=0)
 
     def execute(self, sql, params=()):
         if sql.strip().upper() == "BEGIN IMMEDIATE":
