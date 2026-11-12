@@ -26,8 +26,6 @@ from datetime import datetime, timedelta
 from email.message import EmailMessage
 from functools import wraps
 
-from Lib import email
-
 import idea_crypto
 from flask import (Flask, abort, g, jsonify, redirect, render_template,
                    request, session, url_for)
