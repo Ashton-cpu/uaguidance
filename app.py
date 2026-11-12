@@ -373,7 +373,7 @@ def headers(resp):
     resp.headers["Referrer-Policy"] = "same-origin"
     resp.headers["Cache-Control"] = "no-store"
     resp.headers["Content-Security-Policy"] = (
-        "default-src 'self'; img-src 'self' data:; style-src 'self'; "
+        "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; "
         "script-src 'self'; frame-ancestors 'none'")
     return resp
 
