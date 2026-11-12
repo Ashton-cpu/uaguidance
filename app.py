@@ -26,6 +26,8 @@ from datetime import datetime, timedelta
 from email.message import EmailMessage
 from functools import wraps
 
+from Lib import email
+
 import idea_crypto
 from flask import (Flask, abort, g, jsonify, redirect, render_template,
                    request, session, url_for)
@@ -453,8 +455,8 @@ def api_send_code():
     # The pending code lives in the signed session cookie, so it works even
     # when Vercel runs each request on a different server instance.
     session["code_log"] = recent + [t]
-    session["vc"] = {"email": email, "h": code_hash(sid, email, code),
-                     "exp": t + 300, "tries": 0}
+    session["vc"] = {"email": email, "h": code_hash(email, code),
+                 "exp": t + 300, "tries": 0}
     session.pop("vok", None)
     sent = send_mail(email, "UA Guidance Office verification code",
                      f"Your verification code is {code}. It expires in 5 minutes.\n"
@@ -464,8 +466,8 @@ def api_send_code():
     return jsonify(ok=True)
 
 
-def code_hash(sid, email, code):
-    return hmac.new(SECRET, f"{sid}:{email}:{code}".encode(), hashlib.sha256).hexdigest()
+def code_hash(email, code):
+    return hmac.new(SECRET, f"{email}:{code}".encode(), hashlib.sha256).hexdigest()
 
 
 @app.post("/api/verify-code")
@@ -474,11 +476,11 @@ def api_verify_code():
     email, err = clean_email(data.get("email"))
     sid, t = session.get("sid"), time.time()
     vc = session.get("vc")
-    if not (sid and email and vc) or vc["email"] != email or vc["exp"] < t or vc["tries"] >= 5:
+    if not (email and vc) or vc["email"] != email or vc["exp"] < t or vc["tries"] >= 5:
         return jsonify(error="Code expired or too many tries. Send a new code."), 400
     vc["tries"] += 1
     session["vc"] = vc
-    ok = hmac.compare_digest(vc["h"], code_hash(sid, email, str(data.get("code", "")).strip()))
+    ok = hmac.compare_digest(vc["h"], code_hash(email, str(data.get("code", "")).strip()))
     if not ok:
         return jsonify(error="Wrong code."), 400
     session["vok"] = {"email": email, "t": t}
