@@ -124,10 +124,18 @@
 {% endblock %}
 
 {% block body %}
-
-{% set pending_items   = items | selectattr('a.status', 'equalto', 'Pending')   | list %}
-{% set confirmed_items = items | selectattr('a.status', 'equalto', 'Confirmed') | list %}
-{% set cancelled_items = items | selectattr('a.status', 'equalto', 'Cancelled') | list %}
+{% set pending_items   = [] %}
+{% set confirmed_items = [] %}
+{% set cancelled_items = [] %}
+{% for i in items %}
+  {% if i.a.status == 'Pending'   %}{% set pending_items   = pending_items   + [i] %}{% endif %}
+{% endfor %}
+{% for i in items %}
+  {% if i.a.status == 'Confirmed' %}{% set confirmed_items = confirmed_items + [i] %}{% endif %}
+{% endfor %}
+{% for i in items %}
+  {% if i.a.status == 'Cancelled' %}{% set cancelled_items = cancelled_items + [i] %}{% endif %}
+{% endfor %}
 
 <div class="dash-header">
   <h1>Dashboard</h1>
