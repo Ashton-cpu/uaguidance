@@ -123,7 +123,7 @@ COUNSELORS = {
 }
 PROGRAM_TO_COUNSELOR = {p: u for u, (_, progs) in COUNSELORS.items() for p in progs}
 SERVICES = {"Counseling": 30, "Initial interview": 15, "Routine interview": 15}
-WORK_BLOCKS = [(540, 720), (780, 1020)]  # 9:00-12:00 and 1:00-5:00 (minutes)
+WORK_BLOCKS = [(450, 720), (780, 990)] # 9:00-12:00 and 1:00-5:00 (minutes)
 MAX_ACTIVE_PER_STUDENT = 2
 EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 
