@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="csrf" content="{{ csrf_token() }}">
-<title>{% block title %}Guidance Office Appointments{% endblock %}</title>
+<title>{% block title %}GinhawUA Center and Admissions Office Appointments{% endblock %}</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v='layout-3') }}">
 {% block styles %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
 <header class="bar"><div class="bar-in">
-  <a class="logo" href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='logo.jpg') }}" alt="University of the Assumption seal"><div><small>University of the Assumption</small><b>Guidance Office</b></div></a>
+  <a class="logo" href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='logo.jpg') }}" alt="University of the Assumption seal"><div><small>University of the Assumption</small><b>GinhawUA Center and Admissions Office</b></div></a>
   <input type="checkbox" id="navt" class="navt" aria-label="Toggle menu">
   <label for="navt" class="burger" aria-hidden="true"><span></span><span></span><span></span></label>
   <nav class="nav" aria-label="Main">
@@ -30,7 +30,7 @@
 <main>
 {% block body %}{% endblock %}
 </main>
-<footer><div class="foot-in"><p style="margin:0"><b>University of the Assumption</b> | City of San Fernando, Pampanga, Philippines<br>Guidance Office hours: Monday to Friday, 7:30 AM to 12:00 PM and 1:00 PM to 4:30 PM<br><i>Scientia, Virtus, Communitas</i></p></div></footer>
+<footer><div class="foot-in"><p style="margin:0"><b>University of the Assumption</b> | City of San Fernando, Pampanga, Philippines<br>GinhawUA Center and Admissions Office hours: Monday to Friday, 7:30 AM to 12:00 PM and 1:00 PM to 4:30 PM<br><i>Scientia, Virtus, Communitas</i></p></div></footer>
 <script src="{{ url_for('static', filename='app.js') }}"></script>
 {% block scripts %}{% endblock %}
 </body>

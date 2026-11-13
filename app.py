@@ -1,5 +1,5 @@
 """
-UA Guidance Office - Online Appointment System (Flask backend)
+UA GinhawUA Center and Admissions Office - Online Appointment System (Flask backend)
 
 Security design (Information Assurance):
   Confidentiality : student details are encrypted with the IDEA cipher (CBC mode) before
@@ -123,7 +123,7 @@ COUNSELORS = {
 }
 PROGRAM_TO_COUNSELOR = {p: u for u, (_, progs) in COUNSELORS.items() for p in progs}
 SERVICES = {"Counseling": 30, "Initial interview": 15, "Routine interview": 15}
-WORK_BLOCKS = [(450, 720), (780, 990)] # 9:00-12:00 and 1:00-5:00 (minutes)
+WORK_BLOCKS = [(450, 720), (780, 990)]  # 7:30-12:00 and 1:00-4:30 (minutes)
 MAX_ACTIVE_PER_STUDENT = 2
 EMAIL_RE = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 
@@ -326,7 +326,7 @@ def free_slots(db, counselor, day, dur):
 
 
 def _html_email(title, preheader, body_html):
-    """Wrap content in a branded UA Guidance Office HTML email shell."""
+    """Wrap content in a branded UA GinhawUA Center and Admissions Office HTML email shell."""
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -343,7 +343,7 @@ def _html_email(title, preheader, body_html):
       <tr>
         <td style="background:#1a2456;padding:28px 36px;text-align:center;">
           <p style="margin:0 0 4px 0;font-size:11px;color:#c9a227;letter-spacing:2px;text-transform:uppercase;">University of the Assumption</p>
-          <p style="margin:0;font-size:22px;font-weight:bold;color:#ffffff;">Guidance Office</p>
+          <p style="margin:0;font-size:22px;font-weight:bold;color:#ffffff;">GinhawUA Center and Admissions Office</p>
           <div style="margin:14px auto 0;width:48px;height:3px;background:#c9a227;border-radius:2px;"></div>
         </td>
       </tr>
@@ -358,7 +358,7 @@ def _html_email(title, preheader, body_html):
       <!-- FOOTER -->
       <tr>
         <td style="background:#f4f6fb;padding:20px 36px;text-align:center;border-top:1px solid #e8eaf0;">
-          <p style="margin:0;font-size:12px;color:#8a8fa8;">This is an automated message from the UA Guidance Office.<br>Please do not reply to this email.</p>
+          <p style="margin:0;font-size:12px;color:#8a8fa8;">This is an automated message from the UA GinhawUA Center and Admissions Office.<br>Please do not reply to this email.</p>
           <p style="margin:8px 0 0;font-size:11px;color:#b0b4c8;">University of the Assumption &bull; Angeles City, Pampanga</p>
         </td>
       </tr>
@@ -512,7 +512,7 @@ def api_send_code():
                  "exp": t + 300, "tries": 0}
     session.pop("vok", None)
     html_code = _html_email(
-        "UA Guidance Office — Verification Code",
+        "UA GinhawUA Center and Admissions Office — Verification Code",
         f"Your verification code is {code}",
         f"""
         <p style="margin:0 0 8px;font-size:16px;font-weight:bold;color:#1a2456;">Email Verification</p>
@@ -527,7 +527,7 @@ def api_send_code():
     )
     sent = send_mail(
         email,
-        "UA Guidance Office verification code",
+        "UA GinhawUA Center and Admissions Office verification code",
         f"Your verification code is {code}. It expires in 5 minutes.\nIf you did not request it, ignore this email.",
         html_code
     )
@@ -788,7 +788,7 @@ def change_status(ref, action):
                 </tr>
               </table>
             </div>
-            <p style="margin:0;font-size:13px;color:#8a8fa8;">If you have questions, please contact the Guidance Office directly.</p>
+            <p style="margin:0;font-size:13px;color:#8a8fa8;">If you have questions, please contact the GinhawUA Center and Admissions Office directly.</p>
             """
         )
         send_mail(

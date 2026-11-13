@@ -12,6 +12,6 @@
 <div class="item"><span>Time</span><span>{{ a.start|fmt_time }} to {{ (a.start + a.dur)|fmt_time }}</span></div>
 <div class="item"><span>Status</span><span>{{ a.status }}{% if a.status == 'Pending' %} (awaiting confirmation){% endif %}</span></div>
 <div class="item"><span>Issued</span><span>{{ issued }}</span></div></div>
-<p class="mute">Valid only when confirmed by your counselor. Show this receipt or the reference code at the Guidance Office. Your student number is partly hidden for privacy. A confirmation will be sent to your email.</p>
+<p class="mute">Valid only when confirmed by your counselor. Show this receipt or the reference code at the GinhawUA Center and Admissions Office. Your student number is partly hidden for privacy. A confirmation will be sent to your email.</p>
 <div class="row noprint"><a class="btn" href="{{ url_for('home') }}">Back to home</a><button class="btn o" type="button" data-print>Print or save as PDF</button></div></div>
 {% endblock %}
